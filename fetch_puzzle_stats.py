@@ -6,12 +6,14 @@ from datetime import datetime, timedelta
 import requests
 from dotenv import load_dotenv
 from tqdm import tqdm
+import logging
 
 load_dotenv()
 
 API_ROOT = "http://www.nytimes.com/svc/crosswords"
 PUZZLE_INFO = API_ROOT + "/v3/puzzles.json"
 PUZZLE_DETAIL = API_ROOT + "/v6/game/"
+PUZZLE_STATES = "http://www.nytimes.com/svc/games/state/crossword_daily/latests"
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -88,6 +90,22 @@ def get_v3_puzzle_detail(puzzle_id, cookie):
     return puzzle_detail
 
 
+## Returns a list of "game_data", each of which is a dict of a puzzle state.
+def get_puzzle_states(puzzle_id_list, cookie):
+    payload = {
+        "puzzle_ids": ",".join(str(i) for i in puzzle_id_list)
+    }
+
+    puzzle_resp = requests.get(
+        f"{PUZZLE_STATES}", params=payload, cookies={"NYT-S": cookie}
+    )
+
+    puzzle_resp.raise_for_status()
+    puzzle_states = puzzle_resp.json()["states"]
+
+    return puzzle_states
+
+
 if __name__ == "__main__":
     args = parser.parse_args()
     cookie = os.getenv("NYT_COOKIE")
@@ -112,7 +130,11 @@ if __name__ == "__main__":
         batch_end = end_date
     batch_start = start_date
 
-    puzzle_overview = []
+    # Set up basic logging to print warnings cleanly.
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
+    # Make this a dictionary, so we can index on puzzle_id
+    puzzle_overview = {}
 
     for batch in (pbar := tqdm(range(batches))):
         pbar.set_description(f"Start date: {batch_start}")
@@ -122,23 +144,63 @@ if __name__ == "__main__":
             end_date=batch_end,
             cookie=cookie,
         )
-        puzzle_overview.extend(batch_overview)
+
+        for puzzle in batch_overview:
+            puzzle["day_of_week_name"] = datetime.strptime(puzzle["print_date"], DATE_FORMAT).strftime('%A')
+            puzzle["day_of_week_integer"] = datetime.strptime(puzzle["print_date"], DATE_FORMAT).strftime('%w')
+            # Rename the 'star' since it's only true for gold stars
+            if "star" in puzzle:
+                puzzle["gold_star"] = puzzle.pop("star")
+    
+        # Convert the list of dicts into a key-value dictionary and merge it
+        batch_dict = {str(puzzle["puzzle_id"]): puzzle for puzzle in batch_overview}
+        puzzle_overview.update(batch_dict)
+        
         batch_start = batch_start + timedelta(days=100)
         batch_end = batch_end + timedelta(days=100)
 
-    print("\nGetting puzzle solve times\n")
+    print("\nGetting puzzle states\n")
 
-    for puzzle in tqdm(puzzle_overview):
-        detail = get_v3_puzzle_detail(puzzle_id=puzzle["puzzle_id"], cookie=cookie)
-        puzzle["solving_seconds"] = detail.get("secondsSpentSolving", None)
-        puzzle["day_of_week_name"] = datetime.strptime(puzzle["print_date"], DATE_FORMAT).strftime('%A')
-        puzzle["day_of_week_integer"] = datetime.strptime(puzzle["print_date"], DATE_FORMAT).strftime('%w')
+    puzzle_ids = list(puzzle_overview.keys())
+
+    for i in tqdm(range(0, len(puzzle_ids), 30), desc="Fetching puzzle states"):
+        id_chunk = puzzle_ids[i : i + 30]
+        requested_ids = set(id_chunk)
+        chunk_states = get_puzzle_states(id_chunk, cookie)
+    
+        for state in chunk_states:
+            pid = str(state["puzzle_id"])
+        
+            # Check if the API returned an ID that was not in the request batch
+            if pid not in requested_ids:
+                logging.warning(f"Received unrequested puzzle_id: {pid}")
+      
+            if pid in puzzle_overview:
+                # We save all the fields of each game_data except "cells".  
+                # Also, "star" needs to be renamed, and checked, confirmed,
+                # modified, penciled, and revealed are arrays where we
+                # just save the len
+                game_data = state["game_data"]
+
+                if "cells" in game_data:
+                    del game_data["cells"]
+    
+                if "star" in game_data:
+                    game_data["state_star"] = game_data.pop("star")
+
+                # Replace list values with their lengths
+                for key in ["checked", "confirmed", "modified",
+                            "penciled", "revealed" ]:
+                    if key in game_data:
+                        game_data[key] = len(game_data[key])
+                
+                puzzle_overview[pid].update(game_data)
 
     fields = [
+        "print_date",
         "author",
         "editor",
         "format_type",
-        "print_date",
         "day_of_week_name",
         "day_of_week_integer",
         "publish_type",
@@ -147,15 +209,29 @@ if __name__ == "__main__":
         "version",
         "percent_filled",
         "solved",
-        "star",
-        "solving_seconds",
+        "gold_star",
+        "checked",
+        "completionFraction",
+        "confirmed",
+        "firstSolve",
+        "firstSolveDate",
+        "firstSolveRevealedOrReset",
+        "firstSolveUsedAid",
+        "isAutocheckEnabled",
+        "isTimerReset",
+        "modified",
+        "penciled",
+        "playTimeSeconds",
+        "puzzleInfoSeen",
+        "revealed",
+        "state_star"
     ]
 
     print("Writing stats to {}".format(args.output_csv))
 
-    with open(args.output_csv, "w") as f:
-        writer = DictWriter(f, fields)
+    with open(args.output_csv, "w", newline="", encoding="utf-8") as f:
+        writer = DictWriter(f, fieldnames=fields)
         writer.writeheader()
-        writer.writerows(puzzle_overview)
+        writer.writerows(puzzle_overview.values())
 
     print("{} rows written to {}".format(len(puzzle_overview), args.output_csv))
