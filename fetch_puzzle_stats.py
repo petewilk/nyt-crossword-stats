@@ -116,18 +116,16 @@ if __name__ == "__main__":
     end_date = datetime.strptime(args.end_date, DATE_FORMAT)
 
     days_between = (end_date - start_date).days
-    batches = (days_between // 100) + 1
+    # The puzzle overview API maxes out at 100 results for most dates,
+    # but for some dates in 1996 and 1999 it maxes at 97 or 98.  So tweak
+    # the batch size below that
+    BATCH_SIZE = 95
+    batches = (days_between // BATCH_SIZE) + 1
 
     print(
         f"Getting stats from {args.start_date} until {args.end_date} in {batches} batches"
     )
 
-    date = start_date
-
-    if end_date - start_date > timedelta(days=100):
-        batch_end = start_date + timedelta(days=100)
-    else:
-        batch_end = end_date
     batch_start = start_date
 
     # Set up basic logging to print warnings cleanly.
@@ -137,6 +135,7 @@ if __name__ == "__main__":
     puzzle_overview = {}
 
     for batch in (pbar := tqdm(range(batches))):
+        batch_end = min(batch_start + timedelta(days=BATCH_SIZE-1), end_date)
         pbar.set_description(f"Start date: {batch_start}")
         batch_overview = get_v3_puzzle_overview(
             puzzle_type=args.type,
@@ -156,8 +155,7 @@ if __name__ == "__main__":
         batch_dict = {str(puzzle["puzzle_id"]): puzzle for puzzle in batch_overview}
         puzzle_overview.update(batch_dict)
         
-        batch_start = batch_start + timedelta(days=100)
-        batch_end = batch_end + timedelta(days=100)
+        batch_start = batch_end + timedelta(days=1)
 
     print("\nGetting puzzle states\n")
 
