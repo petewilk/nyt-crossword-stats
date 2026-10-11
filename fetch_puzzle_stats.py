@@ -10,10 +10,10 @@ import logging
 
 load_dotenv()
 
-API_ROOT = "http://www.nytimes.com/svc/crosswords"
+API_ROOT = "https://www.nytimes.com/svc/crosswords"
 PUZZLE_INFO = API_ROOT + "/v3/puzzles.json"
 PUZZLE_DETAIL = API_ROOT + "/v6/game/"
-PUZZLE_STATES = "http://www.nytimes.com/svc/games/state/crossword_daily/latests"
+PUZZLE_STATES = "https://www.nytimes.com/svc/games/state/crossword_daily/latests"
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -228,7 +228,7 @@ if __name__ == "__main__":
     print("Writing stats to {}".format(args.output_csv))
 
     with open(args.output_csv, "w", newline="", encoding="utf-8") as f:
-        writer = DictWriter(f, fieldnames=fields)
+        writer = DictWriter(f, fieldnames=fields, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(puzzle_overview.values())
 
