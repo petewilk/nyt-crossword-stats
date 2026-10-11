@@ -77,7 +77,7 @@ def get_v3_puzzle_overview(puzzle_type, start_date, end_date, cookie):
     overview_resp = requests.get(PUZZLE_INFO, params=payload, cookies={"NYT-S": cookie})
 
     overview_resp.raise_for_status()
-    puzzle_info = overview_resp.json().get("results")
+    puzzle_info = overview_resp.json().get("results") or []
     return puzzle_info
 
 
