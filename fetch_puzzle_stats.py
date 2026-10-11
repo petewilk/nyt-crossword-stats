@@ -13,7 +13,9 @@ load_dotenv()
 API_ROOT = "https://www.nytimes.com/svc/crosswords"
 PUZZLE_INFO = API_ROOT + "/v3/puzzles.json"
 PUZZLE_DETAIL = API_ROOT + "/v6/game/"
-PUZZLE_STATES = "https://www.nytimes.com/svc/games/state/crossword_daily/latests"
+# The Mini's solve states live under a separate game name
+PUZZLE_STATES = "https://www.nytimes.com/svc/games/state/{game}/latests"
+STATE_GAMES = {"mini": "crossword_mini"}
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -91,13 +93,14 @@ def get_v3_puzzle_detail(puzzle_id, cookie):
 
 
 ## Returns a list of "game_data", each of which is a dict of a puzzle state.
-def get_puzzle_states(puzzle_id_list, cookie):
+def get_puzzle_states(puzzle_id_list, puzzle_type, cookie):
     payload = {
         "puzzle_ids": ",".join(str(i) for i in puzzle_id_list)
     }
 
     puzzle_resp = requests.get(
-        f"{PUZZLE_STATES}", params=payload, cookies={"NYT-S": cookie}
+        PUZZLE_STATES.format(game=STATE_GAMES.get(puzzle_type, "crossword_daily")),
+        params=payload, cookies={"NYT-S": cookie}
     )
 
     puzzle_resp.raise_for_status()
@@ -164,7 +167,7 @@ if __name__ == "__main__":
     for i in tqdm(range(0, len(puzzle_ids), 30), desc="Fetching puzzle states"):
         id_chunk = puzzle_ids[i : i + 30]
         requested_ids = set(id_chunk)
-        chunk_states = get_puzzle_states(id_chunk, cookie)
+        chunk_states = get_puzzle_states(id_chunk, args.type, cookie)
     
         for state in chunk_states:
             pid = str(state["puzzle_id"])
