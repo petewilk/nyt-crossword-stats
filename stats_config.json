@@ -7,7 +7,15 @@
     "no_hint": "#2a78d6",
     "hint": "#eb6834"
   },
-  "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+  "days": [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday"
+  ],
   "hint_note": "“hints” = check or reveal used before the first solve",
   "types": {
     "mini": {
@@ -17,7 +25,8 @@
       "under_seconds": 60,
       "hist_cap_seconds": 300,
       "hist_bin_seconds": 15,
-      "tick_seconds": 60
+      "tick_seconds": 60,
+      "game": "crossword_mini"
     },
     "daily": {
       "label": "Daily",
@@ -26,7 +35,51 @@
       "under_seconds": 600,
       "hist_cap_seconds": 3600,
       "hist_bin_seconds": 120,
-      "tick_seconds": 600
+      "tick_seconds": 600,
+      "game": "crossword_daily"
     }
+  },
+  "fetch": {
+    "puzzle_info": "https://www.nytimes.com/svc/crosswords/v3/puzzles.json",
+    "puzzle_states": "https://www.nytimes.com/svc/games/state/{game}/latests",
+    "batch_days": 95,
+    "state_chunk": 30,
+    "counted_fields": [
+      "checked",
+      "confirmed",
+      "modified",
+      "penciled",
+      "revealed"
+    ],
+    "csv_fields": [
+      "print_date",
+      "author",
+      "editor",
+      "format_type",
+      "day_of_week_name",
+      "day_of_week_integer",
+      "publish_type",
+      "puzzle_id",
+      "title",
+      "version",
+      "percent_filled",
+      "solved",
+      "gold_star",
+      "checked",
+      "completionFraction",
+      "confirmed",
+      "firstSolve",
+      "firstSolveDate",
+      "firstSolveRevealedOrReset",
+      "firstSolveUsedAid",
+      "isAutocheckEnabled",
+      "isTimerReset",
+      "modified",
+      "penciled",
+      "playTimeSeconds",
+      "puzzleInfoSeen",
+      "revealed",
+      "state_star"
+    ]
   }
 }

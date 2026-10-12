@@ -91,6 +91,18 @@ To rebuild the image from a CSV you already have:
 python mini_stats/mini_stats_summary.py mini_all.csv --type mini -o summary.png
 ```
 
+## Bookmarklet
+
+`bookmarklet/` is a browser bookmark that shows the same summary without Python. Click it on a logged-in www.nytimes.com tab and it reads your solve history straight from the NYT, then opens an overlay with a Mini tab and a Daily tab. Each tab has **Save image** (PNG) and **Download CSV** (the same columns as `fetch_puzzle_stats.py`). The Daily tab uses the Daily thresholds from `stats_config.json`: "Under 10:00", and a histogram in 2-minute bins up to 60:00.
+
+Behind the scenes it retries NYT requests that fail with 429 or 5xx, fetches four batches at a time, and on failure offers **Copy error details**. The copied report includes the step, the HTTP status, the request path and your browser's user agent, never cookies.
+
+The source is in `bookmarklet/src/`. `bookmarklet/build.py` bundles it with `stats_config.json` into the drag-to-install link on `docs/index.html`:
+```bash
+python bookmarklet/build.py
+```
+Rerun it after changing `bookmarklet/src/`, `bookmarklet/install_template.html` or `stats_config.json`; a test fails while `docs/index.html` is out of date. To publish the install page, turn on GitHub Pages for the repo with **Deploy from a branch**, branch `master`, folder `/docs`.
+
 ## Example
 
 For an example of how to use this data, I plotted my solve times over the last ~8 months, grouped by day:
@@ -98,8 +110,9 @@ For an example of how to use this data, I plotted my solve times over the last ~
 
 ## Development
 
-Install the test dependencies and run the tests:
+Install the test dependencies and run the tests. The bookmarklet tests also need Node 18 or later, and are skipped without it:
 ```bash
 pip install -r requirements.txt -r requirements-dev.txt
 python -m pytest
 ```
+`tests/test_bookmarklet.py` runs the bookmarklet's stats on the same CSVs as `mini_stats_summary.py` and fails if any number differs.

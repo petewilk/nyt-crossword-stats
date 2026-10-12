@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import os
 from csv import DictWriter
@@ -9,55 +10,29 @@ import requests
 from dotenv import load_dotenv
 from tqdm import tqdm
 
-API_ROOT = "https://www.nytimes.com/svc/crosswords"
-PUZZLE_INFO = API_ROOT + "/v3/puzzles.json"
-PUZZLE_STATES = "https://www.nytimes.com/svc/games/state/{game}/latests"
+HERE = Path(__file__).resolve().parent
+ENV_FILE = HERE / ".env"
+# Endpoints, batch sizes and CSV columns are shared with the bookmarklet
+CONFIG = json.loads((HERE / "stats_config.json").read_text(encoding="utf-8"))
+FETCH = CONFIG["fetch"]
+
+PUZZLE_INFO = FETCH["puzzle_info"]
+PUZZLE_STATES = FETCH["puzzle_states"]
 # The states endpoint is keyed by game, and each puzzle type has its own.
 # Bonus puzzles aren't supported: their game name is unconfirmed.
-STATE_GAMES = {"daily": "crossword_daily", "mini": "crossword_mini"}
+STATE_GAMES = {name: puzzle_type["game"] for name, puzzle_type in CONFIG["types"].items()}
 
 DATE_FORMAT = "%Y-%m-%d"
-ENV_FILE = Path(__file__).resolve().with_name(".env")
 
 # The puzzle overview API maxes out at 100 results for most dates,
 # but for some dates in 1996 and 1999 it maxes at 97 or 98.  So tweak
 # the batch size below that
-BATCH_SIZE = 95
-STATE_CHUNK = 30
+BATCH_SIZE = FETCH["batch_days"]
+STATE_CHUNK = FETCH["state_chunk"]
 
 # State fields that are lists of cells; the CSV keeps just their length
-COUNTED_FIELDS = ["checked", "confirmed", "modified", "penciled", "revealed"]
-
-CSV_FIELDS = [
-    "print_date",
-    "author",
-    "editor",
-    "format_type",
-    "day_of_week_name",
-    "day_of_week_integer",
-    "publish_type",
-    "puzzle_id",
-    "title",
-    "version",
-    "percent_filled",
-    "solved",
-    "gold_star",
-    "checked",
-    "completionFraction",
-    "confirmed",
-    "firstSolve",
-    "firstSolveDate",
-    "firstSolveRevealedOrReset",
-    "firstSolveUsedAid",
-    "isAutocheckEnabled",
-    "isTimerReset",
-    "modified",
-    "penciled",
-    "playTimeSeconds",
-    "puzzleInfoSeen",
-    "revealed",
-    "state_star",
-]
+COUNTED_FIELDS = FETCH["counted_fields"]
+CSV_FIELDS = FETCH["csv_fields"]
 
 parser = argparse.ArgumentParser(description="Fetch NYT Crossword stats")
 parser.add_argument("-u", "--username", help="NYT Account Email Address")

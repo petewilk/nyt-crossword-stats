@@ -8,13 +8,13 @@
 <style>
   :root {
     --bg: #f1f0ec;
-    --surface: #fcfcfb;
-    --text: #0b0b0b;
-    --text-2: #52514e;
-    --line: #e4e3df;
-    --accent: #2a78d6;
-    --accent-2: #eb6834;
-    --button-bg: #0b0b0b;
+    --surface: {{surface}};
+    --text: {{text}};
+    --text-2: {{text_2}};
+    --line: {{grid}};
+    --accent: {{no_hint}};
+    --accent-2: {{hint}};
+    --button-bg: {{text}};
     --button-text: #ffffff;
     --kbd-bg: #ecebe7;
   }
@@ -160,7 +160,7 @@
 
   <div class="fine">
     <h3>Is it safe?</h3>
-    <p>The bookmark runs only in your own browser. It reads your solve history from the NYT the same way the crossword page does, and it never sends your data or login anywhere else. The code is <a href="https://github.com/petewilk/nyt-crossword-stats/blob/bookmarklet/bookmarklet/xw_stats.js">open to read</a>.</p>
+    <p>The bookmark runs only in your own browser. It reads your solve history from the NYT the same way the crossword page does, and it never sends your data or login anywhere else. The code is <a href="https://github.com/petewilk/nyt-crossword-stats/tree/master/bookmarklet/src">open to read</a>.</p>
     <h3>Something's not working?</h3>
     <p>It needs a computer. It won't work on a phone or tablet, or in the NYT Games app.</p>
     <p>If clicking the bookmark in Safari does nothing, open <b>Safari → Settings → Advanced</b>, tick <b>Show features for web developers</b>, then choose <b>Develop → Allow JavaScript from Smart Search Field</b>.</p>
