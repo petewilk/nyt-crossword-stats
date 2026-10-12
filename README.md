@@ -76,6 +76,21 @@ One row per puzzle in the date range. The first columns describe the puzzle; the
 * **puzzleInfoSeen** - Whether you opened the puzzle's info
 * **state_star** - The star NYT recorded in your solve state (for example `blue` on the Mini)
 
+## Summary image
+
+`mini_stats/` turns a fetched CSV into a one-page PNG: a summary table plus monthly, weekday, distribution and per-year charts. Solves are split into those with no hints and those where you used check or reveal before the first solve (`firstSolveUsedAid`). Per-type thresholds, such as "Under 1:00" for the Mini and "Under 10:00" for the Daily, live in `stats_config.json`.
+
+Fetch the full history and rebuild the image in one step. It uses `NYT_COOKIE` from the environment or `.env`, or `-u`/`-p`:
+```bash
+python mini_stats/update_mini_stats.py --type mini
+```
+This writes `mini_all.csv` in the repo root and `mini_stats/mini_stats_summary.png`. Use `--type daily` for the Daily.
+
+To rebuild the image from a CSV you already have:
+```bash
+python mini_stats/mini_stats_summary.py mini_all.csv --type mini -o summary.png
+```
+
 ## Example
 
 For an example of how to use this data, I plotted my solve times over the last ~8 months, grouped by day:

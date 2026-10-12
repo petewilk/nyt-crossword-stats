@@ -1,0 +1,8 @@
+print_date,author,editor,format_type,day_of_week_name,day_of_week_integer,publish_type,puzzle_id,title,version,percent_filled,solved,gold_star,checked,completionFraction,confirmed,firstSolve,firstSolveDate,firstSolveRevealedOrReset,firstSolveUsedAid,isAutocheckEnabled,isTimerReset,modified,penciled,playTimeSeconds,puzzleInfoSeen,revealed,state_star
+2023-12-30,A,E,Normal,Saturday,6,Mini,1,,0,100,True,,0,1,0,40,,False,False,False,False,0,0,40,False,0,blue
+2023-12-31,A,E,Normal,Sunday,0,Mini,2,,0,100,True,,2,1,0,75,,False,True,False,False,1,0,80,False,0,blue
+2024-01-01,A,E,Normal,Monday,1,Mini,3,,0,100,True,,0,1,0,,,False,False,False,False,0,0,95,False,0,blue
+2024-01-02,A,E,Normal,Tuesday,2,Mini,4,,0,100,True,,0,1,0,30,,False,False,True,False,0,0,30,False,0,blue
+2024-03-05,A,E,Normal,Tuesday,2,Mini,5,,0,100,True,,0,1,0,400,,False,False,False,False,0,0,400,False,0,blue
+2024-03-06,A,E,Normal,Wednesday,3,Mini,6,,0,0,True,,0,1,0,120,,True,True,False,False,0,0,120,False,3,blue
+2024-03-07,A,E,Normal,Thursday,4,Mini,7,,0,0,False,,,,,,,,,,,,,,,,

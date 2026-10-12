@@ -1,0 +1,32 @@
+{
+  "palette": {
+    "surface": "#fcfcfb",
+    "text": "#0b0b0b",
+    "text_2": "#52514e",
+    "grid": "#e4e3df",
+    "no_hint": "#2a78d6",
+    "hint": "#eb6834"
+  },
+  "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+  "hint_note": "“hints” = check or reveal used before the first solve",
+  "types": {
+    "mini": {
+      "label": "Mini",
+      "title": "NYT Mini Crossword stats",
+      "start": "2014-08-01",
+      "under_seconds": 60,
+      "hist_cap_seconds": 300,
+      "hist_bin_seconds": 15,
+      "tick_seconds": 60
+    },
+    "daily": {
+      "label": "Daily",
+      "title": "NYT Daily Crossword stats",
+      "start": "1993-11-21",
+      "under_seconds": 600,
+      "hist_cap_seconds": 3600,
+      "hist_bin_seconds": 120,
+      "tick_seconds": 600
+    }
+  }
+}
