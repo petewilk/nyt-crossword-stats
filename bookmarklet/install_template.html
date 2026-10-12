@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crossword Stats</title>
+<meta name="description" content="A one-click bookmark that shows your NYT Mini and Daily crossword solve stats.">
+<style>
+  :root {
+    --bg: #f1f0ec;
+    --surface: #fcfcfb;
+    --text: #0b0b0b;
+    --text-2: #52514e;
+    --line: #e4e3df;
+    --accent: #2a78d6;
+    --accent-2: #eb6834;
+    --button-bg: #0b0b0b;
+    --button-text: #ffffff;
+    --kbd-bg: #ecebe7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161615;
+      --surface: #1f1f1d;
+      --text: #f2f1ee;
+      --text-2: #b0afaa;
+      --line: #34332f;
+      --accent: #5b9ae6;
+      --accent-2: #f0845a;
+      --button-bg: #f2f1ee;
+      --button-text: #0b0b0b;
+      --kbd-bg: #2c2c29;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161615;
+    --surface: #1f1f1d;
+    --text: #f2f1ee;
+    --text-2: #b0afaa;
+    --line: #34332f;
+    --accent: #5b9ae6;
+    --accent-2: #f0845a;
+    --button-bg: #f2f1ee;
+    --button-text: #0b0b0b;
+    --kbd-bg: #2c2c29;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 680px; margin: 0 auto; padding: 48px 16px 64px; }
+  h1 { font-size: 34px; line-height: 1.15; margin: 0 0 10px; letter-spacing: -0.01em; }
+  .lede { color: var(--text-2); margin: 0 0 32px; font-size: 18px; }
+  .drag-zone {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 20px;
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .bookmarklet {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 26px;
+    border-radius: 999px;
+    background: var(--button-bg);
+    color: var(--button-text);
+    font-weight: 700;
+    font-size: 19px;
+    text-decoration: none;
+    cursor: grab;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+  }
+  .bookmarklet:active { cursor: grabbing; }
+  .bars { display: inline-flex; align-items: flex-end; gap: 3px; height: 18px; }
+  .bars span { width: 5px; border-radius: 2px 2px 0 0; }
+  .bars span:nth-child(1) { height: 9px; background: var(--accent); }
+  .bars span:nth-child(2) { height: 17px; background: var(--accent-2); }
+  .bars span:nth-child(3) { height: 12px; background: var(--accent); }
+  .hint { color: var(--text-2); font-size: 15px; margin: 14px 0 0; min-height: 1.55em; }
+  .hint.nudge { color: var(--accent-2); font-weight: 600; }
+  ol { list-style: none; padding: 0; margin: 0 0 36px; counter-reset: step; }
+  ol > li {
+    counter-increment: step;
+    position: relative;
+    padding: 0 0 26px 52px;
+  }
+  ol > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+  }
+  h2 { font-size: 19px; margin: 3px 0 6px; }
+  ol p { margin: 0 0 6px; }
+  .browser { color: var(--text-2); font-size: 15px; }
+  .browser b { color: var(--text); }
+  kbd {
+    font: 600 14px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: var(--kbd-bg);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 3px 6px;
+  }
+  .fine {
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+    color: var(--text-2);
+    font-size: 15px;
+  }
+  .fine h3 { color: var(--text); font-size: 16px; margin: 18px 0 4px; }
+  .fine p { margin: 0 0 8px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Your crossword stats, one click away</h1>
+  <p class="lede">See your NYT Mini and Daily solve times: medians, best times, how often you used hints, and how you've changed over the years.</p>
+
+  <div class="drag-zone">
+    <a class="bookmarklet" id="bookmarklet" href="{{BOOKMARKLET_HREF}}"><span class="bars" aria-hidden="true"><span></span><span></span><span></span></span>Crossword stats</a>
+    <p class="hint" id="hint">Drag this button up to your bookmarks bar.</p>
+  </div>
+
+  <ol>
+    <li>
+      <h2>Show your bookmarks bar</h2>
+      <p class="browser"><b>Chrome:</b> press <kbd>⌘</kbd> <kbd>Shift</kbd> <kbd>B</kbd> on a Mac, or <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>B</kbd> on Windows.</p>
+      <p class="browser"><b>Safari:</b> choose <b>View → Show Favorites Bar</b>, or press <kbd>⌘</kbd> <kbd>Shift</kbd> <kbd>B</kbd>.</p>
+    </li>
+    <li>
+      <h2>Drag the button onto the bar</h2>
+      <p>Press and hold the black <b>Crossword stats</b> button above, drag it up to the bar, and let go. A new bookmark called “Crossword stats” appears.</p>
+    </li>
+    <li>
+      <h2>Open the NYT crossword page and click it</h2>
+      <p>Go to <a href="https://www.nytimes.com/crosswords">nytimes.com/crosswords</a> and make sure you're logged in. Then click the <b>Crossword stats</b> bookmark.</p>
+      <p>Your stats load in about 3–4 minutes. Keep the tab open while it works. The Mini appears first and the Daily follows.</p>
+    </li>
+    <li>
+      <h2>Save or share</h2>
+      <p><b>Save image</b> saves a picture of your stats to send to friends. <b>Download CSV</b> saves the raw data as a spreadsheet file. Press <kbd>Esc</kbd> or × to close.</p>
+    </li>
+  </ol>
+
+  <div class="fine">
+    <h3>Is it safe?</h3>
+    <p>The bookmark runs only in your own browser. It reads your solve history from the NYT the same way the crossword page does, and it never sends your data or login anywhere else. The code is <a href="https://github.com/petewilk/nyt-crossword-stats/blob/bookmarklet/bookmarklet/xw_stats.js">open to read</a>.</p>
+    <h3>Something's not working?</h3>
+    <p>It needs a computer. It won't work on a phone or tablet, or in the NYT Games app.</p>
+    <p>If clicking the bookmark in Safari does nothing, open <b>Safari → Settings → Advanced</b>, tick <b>Show features for web developers</b>, then choose <b>Develop → Allow JavaScript from Smart Search Field</b>.</p>
+    <p>If you see an error, click <b>Copy error details</b> and send the text to whoever shared this page with you.</p>
+  </div>
+</main>
+<script>
+  // Clicking the button here does nothing useful, so nudge toward dragging instead.
+  document.getElementById("bookmarklet").addEventListener("click", function (e) {
+    e.preventDefault();
+    var hint = document.getElementById("hint");
+    hint.textContent = "Don't click it here. Drag it up to your bookmarks bar.";
+    hint.className = "hint nudge";
+  });
+</script>
+</body>
+</html>
