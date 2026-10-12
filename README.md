@@ -29,10 +29,10 @@ python fetch_puzzle_stats.py -u your@email.com -p yourpass -s 2019-01-01
 Follow the command `python fetch_puzzle_stats.py` with these options if you want to:
 * `-u` or `--username` The email address for your NYT account
 * `-p` or `--password` The password for your NYT account
-* `-s` or `--start_date` The date to start fetching stats from (default: 30 days ago)
-* `-e` or `--end_date` The date to stop fetching stats from (default: today)
-* `-o` or `--output` The name of the CSV file to output (default: data.csv)
-* `-t` or `--type` The type of puzzle to fetch. One of "daily", "mini", or "bonus" (default: Daily)
+* `-s` or `--start-date` The date to start fetching stats from, as YYYY-MM-DD (default: 30 days ago)
+* `-e` or `--end-date` The date to stop fetching stats from, as YYYY-MM-DD (default: today)
+* `-o` or `--output-csv` The name of the CSV file to output (default: data.csv)
+* `-t` or `--type` The type of puzzle to fetch. One of "daily" or "mini" (default: daily). Bonus puzzles aren't supported.
 
 ### Login Issues
 If you are experiencing 403 errors and you are _sure_ your username and password are correct, you may need to provide your login cookie manually. It's a two-step process: 
@@ -44,43 +44,47 @@ NYT_COOKIE=1ELEHES...yDo40
 ```
 * If your e-mail or password have some unusual characters, be sure to escape them properly, or wrap the password in quotes (`'` or `"`).
 
-The resulting CSV file (`data.csv` by default, override with `-o` flag) has your solve stats.
+The resulting CSV file (`data.csv` by default, override with `-o`/`--output-csv`) has your solve stats.
 
 ## Data Format
 
-### Example CSV:
-(my real stats...don't judge me you pros out there...)
-```csv
-author,editor,format_type,print_date,day_of_week_name,day_of_week_integer,publish_type,puzzle_id,title,version,percent_filled,solved,star,solving_seconds
-Will Nediger,Will Shortz,Normal,2023-12-23,Saturday,6,Daily,21560,,0,100,True,Gold,675
-Drew Schmenner,Will Shortz,Normal,2023-12-24,Sunday,0,Daily,21568,Wrap Stars,0,100,True,Gold,1449
-Amie Walker,Will Shortz,Normal,2023-12-25,Monday,1,Daily,21567,,0,100,True,Gold,243
-```
-| author         | editor      | format_type | print_date | day_of_week_name | day_of_week_integer | publish_type | puzzle_id | title      | version | percent_filled | solved | star | solving_seconds |
-|----------------|-------------|-------------|------------|------------------|---------------------|--------------|-----------|------------|---------|----------------|--------|------|-----------------|
-| Will Nediger   | Will Shortz | Normal      | 2023-12-23 | Saturday         | 6                   | Daily        | 21560     |            | 0       | 100            | True   | Gold | 675             |
-| Drew Schmenner | Will Shortz | Normal      | 2023-12-24 | Sunday           | 0                   | Daily        | 21568     | Wrap Stars | 0       | 100            | True   | Gold | 1449            |
-| Amie Walker    | Will Shortz | Normal      | 2023-12-25 | Monday           | 1                   | Daily        | 21567     |            | 0       | 100            | True   | Gold | 243             |
-
-
-
+One row per puzzle in the date range. The first columns describe the puzzle; the rest are your solve state, and are blank for puzzles you never opened.
 
 ### Fields in CSV:
-* **author** - The author(s) of the puzzle
-* **editor** - Almost always Will Shortz
-* **format_type** - Almost always "Normal"
 * **print_date** - Date the puzzle was published
+* **author** - The author(s) of the puzzle
+* **editor** - The puzzle's editor
+* **format_type** - Almost always "Normal"
 * **day_of_week_name** - Pretty name of the puzzle's day
 * **day_of_week_integer** - Integer value, Sunday = `0`, Monday = `1` ...
-* **publish_type** - `Normal`, `Mini`, `Bonus`
+* **publish_type** - `Daily` or `Mini`
 * **puzzle_id** - NYT's reference ID for the puzzle
 * **title** - The puzzle's title (for Sundays)
 * **version** - NYT's version of the puzzle
+* **percent_filled** - How much of the grid you filled
 * **solved** - Whether the puzzle was solved
-* **star** - Gold if solved before midnight Pacific of its date (value available starting 2018-12-12 )
-* **solving_seconds** - how long it took to solve the puzzle
+* **gold_star** - Gold if solved before midnight Pacific of its date (available starting 2018-12-12)
+* **checked**, **confirmed**, **modified**, **penciled**, **revealed** - Number of cells in each of these states
+* **completionFraction** - Fraction of the grid filled, from 0 to 1
+* **firstSolve** - Timer reading, in seconds, when you first solved the puzzle
+* **firstSolveDate** - When you first solved it, as an ISO 8601 timestamp
+* **firstSolveRevealedOrReset** - Whether a reveal or timer reset happened before the first solve
+* **firstSolveUsedAid** - Whether you used check or reveal before the first solve
+* **isAutocheckEnabled** - Whether autocheck is on for this puzzle
+* **isTimerReset** - Whether the timer was reset
+* **playTimeSeconds** - Total time on the timer, which can exceed **firstSolve** if you replayed the puzzle
+* **puzzleInfoSeen** - Whether you opened the puzzle's info
+* **state_star** - The star NYT recorded in your solve state (for example `blue` on the Mini)
 
 ## Example
 
 For an example of how to use this data, I plotted my solve times over the last ~8 months, grouped by day:
 ![example chart](example_chart.png)
+
+## Development
+
+Install the test dependencies and run the tests:
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+python -m pytest
+```
